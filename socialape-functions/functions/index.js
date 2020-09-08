@@ -19,7 +19,7 @@ const firebase = require("firebase");
 firebase.initializeApp(firebaseConfig);
 const db = admin.firestore();
 
-//Route for loading all the Screams
+//*Route for loading all the Screams
 app.get("/screams", (req, res) => {
   db.collection("screams")
     .orderBy("createdAt", "desc")
@@ -39,7 +39,7 @@ app.get("/screams", (req, res) => {
     .catch((err) => console.error(err));
 });
 
-//Route for posting a Scream
+//*Route for posting a Scream
 app.post("/scream", (req, res) => {
   const newScream = {
     body: req.body.body,
@@ -57,7 +57,19 @@ app.post("/scream", (req, res) => {
     });
 });
 
-//Signup route
+// Validation checking functions
+const isEmail = (email) => {
+  const emailRegEx = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+  if (email.match(emailRegEx)) return true;
+  else return false;
+};
+
+const isEmpty = (string) => {
+  if (string.trim() === "") return true;
+  else return false;
+};
+
+//* Signup Route
 app.post("/signup", (req, res) => {
   const newUser = {
     email: req.body.email,
@@ -66,7 +78,21 @@ app.post("/signup", (req, res) => {
     handle: req.body.handle,
   };
 
-  //TODO: Validate Data
+  // For checking errors
+  let errors = {};
+
+  if (isEmpty(newUser.email)) {
+    errors.email = "Must not be empty";
+  } else if (!isEmail(newUser.email)) {
+    errors.email = "Must be a valid email address";
+  }
+  if (isEmpty(newUser.password)) errors.password = "Must not be empty";
+  if (newUser.password !== newUser.confirmPassword)
+    errors.confirmPassword = "Password muct match";
+  if (isEmpty(newUser.handle)) errors.handle = "Must not be empty";
+  if (Object.keys(errors).length > 0) return res.status(400).json(errors);
+
+  //Check if user handle exists otherwise creates a new user
   let token, userId;
   db.doc(`/users/${newUser.handle}`)
     .get()
@@ -76,7 +102,7 @@ app.post("/signup", (req, res) => {
       } else {
         return firebase
           .auth()
-          .createUserWithEmailAndPassword(newUser.email, newUser.password);
+          .createUserWithEmailAndPassword(newUser.email, newUser.password); //Creates a new user
       }
     })
     .then((data) => {
@@ -91,7 +117,7 @@ app.post("/signup", (req, res) => {
         createdAt: new Date().toISOString(),
         userId,
       };
-      return db.doc(`/users/${newUser.handle}`).set(userCredentials);
+      return db.doc(`/users/${newUser.handle}`).set(userCredentials); //Appending new user in the collection "users"
     })
     .then(() => {
       return res.status(201).json({ token });
