@@ -38,19 +38,20 @@ app.get("/screams", (req, res) => {
     })
     .catch((err) => console.error(err));
 });
+
 //* firebaseAuth
 const FBAuth = (req, res, next) => {
   let idToken;
-
   if (
     req.headers.authorization &&
-    req.headers.authorization.startsWith("Bearer ")
+    req.headers.authorization.split(" ")[0] === "Bearer"
   ) {
-    idToken = req.headers.authorization.split("Bearer ")[1];
+    idToken = req.headers.authorization.split(" ")[1];
   } else {
     console.error("No token found");
     return res.status(403).json({ error: "Unauthorized" });
   }
+
   admin
     .auth()
     .verifyIdToken(idToken)
@@ -58,7 +59,7 @@ const FBAuth = (req, res, next) => {
       req.user = decodedToken;
       console.log(decodedToken);
       return db
-        .collection("user")
+        .collection("users")
         .where("userId", "==", req.user.uid)
         .limit(1)
         .get();
