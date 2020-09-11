@@ -86,3 +86,14 @@ exports.login = (req, res) => {
       return res.status(500).json({ error: err.code });
     });
 };
+
+exports.uploadImage = (req, res) => {
+  const BusBoy = require("busboy");
+  const path = require("path");
+  const os = require("os");
+  const fs = require("fs");
+
+  const busboy = new BusBoy({ headers: req.headers });
+
+  busboy.on('file', (feildname, file, filename, ))
+};
