@@ -20,6 +20,14 @@ let db = {
       commentCount: 2,
     },
   ],
+  comments: [
+    {
+      userHandle: "user",
+      screamId: "rd387h3fr8fq8fh78",
+      body: "Nice one mate!",
+      createdAt: "2020-09-08T06:35:23.181Z",
+    },
+  ],
 };
 
 const userDetails = {
